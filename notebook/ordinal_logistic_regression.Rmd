@@ -1022,7 +1022,10 @@ metadata_enterotypes_num %>%
   select(-Enterotypes_id) %>%
   mutate_all(as.numeric) %>% cor(method="spearman") %>%
   .^2 %>% sqrt() %>% heatmap
-   
+  
+
+save(metadata_enterotypes_num, file="agp_metadata_enterotypes_num.rda")
+ 
 
 ```
 #### metadata enterotypes correspondance analysis
