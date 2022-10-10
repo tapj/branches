@@ -1513,7 +1513,7 @@ rbind(df %>% select(SAMPLE_NAME,Enterotypes_id,shannon, switch, ratio) ,
 
 
 ### pca analysis
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 library(ade4)
 
@@ -1942,7 +1942,7 @@ rbind(df %>% select(SAMPLE_NAME,Enterotypes_id,shannon, switch, ratio) ,
 
 
 ### pca
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 
 library(ade4)
@@ -2060,7 +2060,7 @@ ggplot() + geom_bar(aes(x=variable,y=estimate,fill=switch), position = "dodge", 
 
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 library(caret)
 set.seed(666)
 train.control <- trainControl(method = "repeatedcv", 
@@ -2536,7 +2536,7 @@ f_b_ratio %>%
 ```
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 f_b_ratio %>%
   merge(enterotypes,., by.y="row.names", by.x="sample_name") %>%
@@ -3164,7 +3164,7 @@ fig5I_full
 
 ```
 
-
+### figure for publication
 ```{r fig.height=12, fig.width=16}
 
 fig5B_full_scaled =
@@ -3289,15 +3289,15 @@ metadata %>%
   dplyr::rename(time=days,subject=HOST_SUBJECT_ID) %>% mutate(sample=SAMPLE_NAME) %>% tibble::column_to_rownames("SAMPLE_NAME")-> metadata_for_physeq
 
 
-genus %>% tibble::column_to_rownames("taxa") %>% otu_table(taxa_are_rows=TRUE) -> genus_for_phyloseq
+genus %>% tibble::column_to_rownames("taxa") %>% phyloseq::otu_table(taxa_are_rows=TRUE) -> genus_for_phyloseq
 
 genus %>%
   select(taxa) %>%
   tidyr::separate(taxa, into=c("k","p","c","o","f","g"),remove = FALSE, sep = ";") %>%
-  tibble::column_to_rownames("taxa") %>% as.matrix %>% tax_table() -> taxa_for_phyloseq
+  tibble::column_to_rownames("taxa") %>% as.matrix %>% phyloseq::tax_table() -> taxa_for_phyloseq
 
 
-pseq=phyloseq(OTU=genus_for_phyloseq, sample_data(metadata_for_physeq), TAX=taxa_for_phyloseq )
+pseq=phyloseq::phyloseq(OTU=genus_for_phyloseq, phyloseq::sample_data(metadata_for_physeq), TAX=taxa_for_phyloseq )
 
 
 
