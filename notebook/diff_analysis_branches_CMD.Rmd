@@ -1,0 +1,221 @@
+---
+title: "differential analysis branches CMD"
+output: html_notebook
+---
+
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+devtools::load_all(reset = FALSE)
+
+```
+
+
+
+```{r}
+
+load(system.file("data-raw/curatedMetaG/curated_v3_otu_tax.rda", package = "gutzilla"))
+
+enterotypes = read.csv2("enterotypes_curated_v3_prediction.csv", row.names=1)
+
+
+```
+
+
+
+```{r}
+
+load("curated_v3_species_count.rda")
+load("curated_v3_species_prop.rda")
+
+
+```
+
+
+
+```{r}
+
+curated_v3_species %>% .[1:5,1:5]
+
+species_to_select = BiotypeR::noise.removal(curated_v3_species_prop %>% tibble::column_to_rownames("Species"), percent = 5) %>% rownames()
+
+
+curated_v3_species %>% #.[,1:10] %>%
+  mutate_if(is.numeric, function(x) magrittr::add(x,1)) %>%
+  mutate_if(is.numeric, function(x) compositions::clr(x)  ) %>%
+  filter(Species %in% species_to_select) -> curated_v3_species_clr
+
+save(curated_v3_species_clr, file="curated_v3_species_clr.rda")  
+
+
+```
+
+
+```{r}
+
+curated_v3_species_clr %>%
+  reshape2::melt(id.vars="Species", variable.name = "sample_name") %>%
+  merge(enterotypes, by="sample_name") -> curated_v3_species_clr_melt
+
+
+
+```
+
+
+
+```{r}
+
+
+
+
+wilcox_test <- function(df){
+        wilcox.test(value.x~Enterotypes_id, data=df)
+    } 
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","21")) %>%
+    merge(sampleMetadata %>% select(sample_id, age_category), by.x="sample_name", by.y="sample_id") %>%
+  filter(age_category %in% c("adult","senior")) %>%
+      group_by(Species) %>% 
+      nest()  %>% 
+      mutate(
+        wilcox_test=map(data,wilcox_test),
+        tidy=map(wilcox_test, broom::tidy)) %>% 
+      unnest(tidy,.drop=TRUE) %>%
+  arrange(p.value) %>%
+  ungroup() %>%
+  mutate(fdr=p.adjust(p.value, method = "fdr")) -> res
+
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","21")) %>%
+      group_by(Species, Enterotypes_id) %>%
+  summarise(m=median(value.x)) %>%
+  arrange(desc(m)) %>%
+  reshape2::dcast(Species~Enterotypes_id) %>%
+  merge(res %>% select(Species, fdr), by="Species") %>%
+  mutate(delta = .[[2]] - .[[3]]) %>%
+  arrange(desc(abs(delta))) %>%
+  filter(fdr < 0.05) %>% write.csv(file="DA_bacteroides_branches.csv")
+
+
+
+
+```
+
+
+
+
+```{r}
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","16")) %>%
+    merge(sampleMetadata %>% select(sample_id, age_category), by.x="sample_name", by.y="sample_id") %>%
+  filter(age_category %in% c("adult","senior")) %>%
+      group_by(Species) %>% 
+      nest()  %>% 
+      mutate(
+        wilcox_test=map(data,wilcox_test),
+        tidy=map(wilcox_test, broom::tidy)) %>% 
+      unnest(tidy,.drop=TRUE) %>%
+  arrange(p.value) %>%
+  ungroup() %>%
+  mutate(fdr=p.adjust(p.value, method = "fdr")) -> res
+
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","16")) %>%
+      group_by(Species, Enterotypes_id) %>%
+  summarise(m=median(value.x)) %>%
+  arrange(desc(m)) %>%
+  reshape2::dcast(Species~Enterotypes_id) %>%
+  merge(res %>% select(Species, fdr), by="Species") %>%
+  mutate(delta = .[[2]] - .[[3]]) %>%
+  arrange(desc(abs(delta))) %>%
+  filter(fdr < 0.05) %>% write.csv(file="DA_prevotella_branches.csv")
+
+
+
+```
+
+
+
+
+```{r}
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","19")) %>%
+  merge(sampleMetadata %>% select(sample_id, age_category), by.x="sample_name", by.y="sample_id") %>%
+  filter(age_category %in% c("adult","senior")) %>%
+      group_by(Species) %>% 
+      nest()  %>% 
+      mutate(
+        wilcox_test=map(data,wilcox_test),
+        tidy=map(wilcox_test, broom::tidy)) %>% 
+      unnest(tidy,.drop=TRUE) %>%
+  arrange(p.value) %>%
+  ungroup() %>%
+  mutate(fdr=p.adjust(p.value, method = "fdr")) -> res
+
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","19")) %>%
+      group_by(Species, Enterotypes_id) %>%
+  summarise(m=median(value.x)) %>%
+  arrange(desc(m)) %>%
+  reshape2::dcast(Species~Enterotypes_id) %>%
+  merge(res %>% select(Species, fdr), by="Species") %>%
+  mutate(delta = .[[2]] - .[[3]]) %>%
+  arrange(desc(abs(delta))) %>%
+  filter(fdr < 0.05) %>% write.csv(file="DA_aeroanaerobic_branches.csv")
+
+
+
+```
+
+
+
+```{r}
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","24")) %>%
+  merge(sampleMetadata %>% select(sample_id, age_category), by.x="sample_name", by.y="sample_id") %>%
+  filter(age_category %in% c("adult","senior")) %>%
+      group_by(Species) %>% 
+      nest()  %>% 
+      mutate(
+        wilcox_test=map(data,wilcox_test),
+        tidy=map(wilcox_test, broom::tidy)) %>% 
+      unnest(tidy,.drop=TRUE) %>%
+  arrange(p.value) %>%
+  ungroup() %>%
+  mutate(fdr=p.adjust(p.value, method = "fdr")) -> res
+
+
+curated_v3_species_clr_melt %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character()) %>%
+  filter(Enterotypes_id %in% c("8","24")) %>%
+      group_by(Species, Enterotypes_id) %>%
+  summarise(m=median(value.x)) %>%
+  arrange(desc(m)) %>%
+  reshape2::dcast(Species~Enterotypes_id) %>%
+  merge(res %>% select(Species, fdr), by="Species") %>%
+  mutate(delta = .[[2]] - .[[3]]) %>%
+  arrange(desc(abs(delta))) %>%
+  filter(fdr < 0.05) %>% write.csv(file="DA_bifidobacterium_branches.csv")
+
+
+
+```
