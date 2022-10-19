@@ -6,7 +6,7 @@ output: html_notebook
 
 
 ```{r }
-
+library(patchwork)
 library(dplyr)
 library(ggplot2)
 library(ade4)
@@ -18,7 +18,7 @@ devtools::load_all(reset = FALSE)
 
 
 
-load genus abundance
+## load genus abundance
 ```{r}
 
 genus_path = system.file("data-raw/qiime/generated-files-20190512/taxa/genus.qza", package = "gutzilla")
@@ -28,7 +28,7 @@ genus = qiime2R::read_qza(genus_path)$data %>% as.data.frame %>% tibble::rowname
 
 ```
 
-import outliers file
+## import outliers file
 ```{r}
 
 outliers = readLines(con="outliers_samples.txt")
@@ -43,7 +43,7 @@ enterotypes = readr::read_csv2("enterotypes_prediction_outliers.csv")[,-1]
 ```
 
 
-
+## read mass based filtering
 select based on top 30 read mass genus and remove outliers
 
 ```{r}
@@ -74,7 +74,7 @@ genus_prop %>%
 
 ```
 
-
+## PHATE computation
 ```{r}
 
 #genus_L1 = phateR::library.size.normalize(genus %>% t)
@@ -107,7 +107,7 @@ enterotypes_phate_centroid %>%
 
 ```
 
-
+## PHATE plot
 ```{r}
 genus_phate$embedding %>%
   merge(enterotypes, by.x="row.names", by.y="sample_name") %>%
@@ -225,7 +225,7 @@ ggsave("genus_phate_prevotella_ratio.pdf")
 
 
 
-import shannon
+## import shannon
 ```{r}
 
 shannon_path = system.file("data-raw/qiime/generated-files-20190512/alpha/shannon.qza", package = "gutzilla")
@@ -312,7 +312,7 @@ read.csv2(file="DIET_SCORE_IMP.csv") %>%
 ```
 
 
-
+## exploration
 
 explore bacteroides and prevotella path
 
@@ -459,6 +459,130 @@ ggsave(file="PHATE_combined_plot.pdf")
 ```
 
 
+
+## time series within PHATE coord
+
+
+```{r eval=FALSE, include=FALSE}
+
+
+
+system.file("data-raw/ls_time_series/LS_AGP_dates_surgery.tsv", package = "gutzilla") %>%
+  readr::read_tsv() %>%
+  merge(.,enterotypes_agp, by="sample_name") %>%
+  mutate(collection_timestamp = collection_timestamp %>% lubridate::mdy()) %>%
+  arrange(collection_timestamp) %>%
+  mutate(yearmon = zoo::as.yearmon(collection_timestamp)) %>%
+  mutate(Enterotypes_id = paste0("M",Enterotypes_id)) %>%
+  #filter(value>0.8) %>%
+  ggplot() + geom_histogram(aes(x=collection_timestamp, fill=Enterotypes_id)) + scale_fill_discrete("Local partitions")
+
+
+```
+
+
+
+```{r}
+
+
+system.file("data-raw/ls_time_series/LS_AGP_local_partitions.tsv", package = "gutzilla") %>% readr::read_tsv() %>% pull(host_subject_id) %>% unique -> ls_subject_id
+
+metadata=read.csv2(system.file("data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv", package = "gutzilla"), stringsAsFactors = FALSE) %>% mutate_all(na_if,"")
+
+
+genus_phate$embedding %>%
+  merge(enterotypes,., by.y="row.names", by.x="sample_name") %>%
+  merge(.,metadata %>% 
+  filter(SAMPLE_TYPE == "Stool") %>%
+  select(HOST_SUBJECT_ID,SAMPLE_NAME, COLLECTION_TIMESTAMP) %>%
+  mutate(COLLECTION_TIMESTAMP = COLLECTION_TIMESTAMP %>% lubridate::as_datetime()), 
+  by.x="sample_name", by.y="SAMPLE_NAME") -> genus_phate_time_series_df
+  
+
+myPalette <- colorRampPalette(rev(RColorBrewer::brewer.pal(11, "Spectral")))
+
+
+
+
+
+genus_phate_time_series_df %>%
+  #mutate(COLLECTION_TIMESTAMP = factor(COLLECTION_TIMESTAMP, labels = dates, ordered = TRUE)) %>%
+  ggplot() + 
+  geom_point(aes(x=PHATE1, y=PHATE2), alpha=0.1, size=0.5, col="grey") +
+  geom_path(data=genus_phate_time_series_df %>% filter(HOST_SUBJECT_ID %in% ls_subject_id) , aes(x=PHATE1, y=PHATE2, col=COLLECTION_TIMESTAMP)) +
+    geom_point(data=genus_phate_time_series_df %>% filter(HOST_SUBJECT_ID %in% ls_subject_id) , aes(x=PHATE1, y=PHATE2, col=COLLECTION_TIMESTAMP)) +
+  scale_color_datetime(name = "Time (Years)",low = "red", high = "blue") +
+    cowplot::theme_cowplot()
+
+
+
+ 
+#   genus_phate_time_series_df %>%
+#   arrange(COLLECTION_TIMESTAMP) %>%
+#     mutate(time_idx = row_number()) %>%
+#   #mutate(COLLECTION_TIMESTAMP = factor(COLLECTION_TIMESTAMP, labels = dates, ordered = TRUE)) %>%
+#   ggplot() +
+#     geom_path(data=genus_phate_time_series_df %>% 
+#                 filter(HOST_SUBJECT_ID %in% ls_subject_id) %>% 
+#                 arrange(COLLECTION_TIMESTAMP) %>% 
+#                 mutate(time_idx = row_number()) , aes(y=PHATE2, x=PHATE1, col=COLLECTION_TIMESTAMP)) +
+# geom_point(data=genus_phate_time_series_df %>% 
+#              filter(HOST_SUBJECT_ID %in% ls_subject_id) %>% 
+#              arrange(COLLECTION_TIMESTAMP) %>%
+#              mutate(time_idx = row_number()) , aes(y=PHATE2, x=PHATE1, col=COLLECTION_TIMESTAMP))
+
+
+```
+
+
+```{r}
+
+genus_phate_time_series_df %>%
+  filter(!(HOST_SUBJECT_ID%in%ls_subject_id)) %>%
+  group_by(HOST_SUBJECT_ID) %>%
+  filter(any(Enterotypes_id %in% c(15))) %>%
+  summarise(n=n()) %>%
+  top_n(1,n) %>% pull(HOST_SUBJECT_ID) -> select_other_subject
+
+
+
+
+genus_phate_time_series_df %>%
+  filter(HOST_SUBJECT_ID %in% select_other_subject[1]) %>%
+  ggplot() + 
+   geom_point(aes(x=PHATE1, y=PHATE2), alpha=0.1, size=0.5, col="grey", data=genus_phate_time_series_df) +
+  geom_path(aes(x=PHATE1, y=PHATE2, col=COLLECTION_TIMESTAMP)) + 
+  geom_point(aes(x=PHATE1, y=PHATE2, col=COLLECTION_TIMESTAMP)) + 
+    scale_color_datetime(name = "Time",low = "red", high = "blue") +
+    cowplot::theme_cowplot()
+
+
+
+
+
+genus_phate_time_series_df %>%
+  filter(!(HOST_SUBJECT_ID%in%ls_subject_id)) %>%
+  group_by(HOST_SUBJECT_ID) %>%
+  filter(any(Enterotypes_id %in% c(18))) %>%
+  summarise(n=n()) %>%
+  top_n(1,n) %>% pull(HOST_SUBJECT_ID) -> select_other_subject_prevotella
+
+
+genus_phate_time_series_df %>%
+  filter(HOST_SUBJECT_ID %in% select_other_subject_prevotella[1]) %>%
+  ggplot() + 
+   geom_point(aes(x=PHATE1, y=PHATE2), alpha=0.1, size=0.5, col="grey", data=genus_phate_time_series_df) +
+  geom_path(aes(x=PHATE1, y=PHATE2, col=COLLECTION_TIMESTAMP)) + 
+  geom_point(aes(x=PHATE1, y=PHATE2, col=COLLECTION_TIMESTAMP)) + 
+    scale_color_datetime(name = "Time",low = "red", high = "blue") +
+    cowplot::theme_cowplot()
+
+
+
+
+
+
+```
 
 
 
