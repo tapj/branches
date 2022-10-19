@@ -18,6 +18,11 @@ genus = qiime2R::read_qza(genus_path)$data %>% as.data.frame %>% tibble::rowname
 load metadata (cleaned) and add united nation subregions
 ```{r}
 
+country_info = readr::read_tsv(system.file(package="gutzilla", "data-raw/countryInfo.txt"), comment = "#", col_names = FALSE, na = "") %>%
+  select(X5,X9) %>%
+  dplyr::rename(country="X5", continent="X9" )
+
+
 data("UNSD_countries")
 
 metadata = readr::read_csv2(system.file("data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv", package = "gutzilla"))
@@ -165,19 +170,19 @@ load DMM model fit from boostrap
 #source("enterotypes_bootstrap.R")
 
 
-# fit_genus_bootstrap = vector("list",5)
-# load("../fit_genus_list_1.rda")
-# fit_genus_bootstrap[[1]] = fit_genus_list
-# load("../fit_genus_list_2.rda")
-# fit_genus_bootstrap[[2]] = fit_genus_list
-# load("../fit_genus_list_3.rda")
-# fit_genus_bootstrap[[3]] = fit_genus_list
-# load("../fit_genus_list_4.rda")
-# fit_genus_bootstrap[[4]] = fit_genus_list
-# load("../fit_genus_list_5.rda")
-# fit_genus_bootstrap[[5]] = fit_genus_list
+ # fit_genus_bootstrap = vector("list",5)
+ # load("fit_genus_list_1.rda")
+ # fit_genus_bootstrap[[1]] = fit_genus_list
+ # load("fit_genus_list_2.rda")
+ # fit_genus_bootstrap[[2]] = fit_genus_list
+ # load("fit_genus_list_3.rda")
+ # fit_genus_bootstrap[[3]] = fit_genus_list
+ # load("fit_genus_list_4.rda")
+ # fit_genus_bootstrap[[4]] = fit_genus_list
+ # load("fit_genus_list_5.rda")
+ # fit_genus_bootstrap[[5]] = fit_genus_list
 
-load("../fit_genus_bootstrap.rda")
+ load("../fit_genus_bootstrap.rda")
 
 ```
 
