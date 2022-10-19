@@ -1705,6 +1705,80 @@ fig4A = fig4A + ylab("")
 
 ```
 
+
+## focus on Bacteroides branches
+
+
+```{r fig.height=10, fig.width=15}
+  regm_tidy %>%
+  group_by(variable) %>% mutate(p.value = p.adjust(p.value, method="fdr")) %>%
+    mutate(variable_group = "disease") %>%
+   mutate(variable_group = 
+             case_when(variable %in% c("AGE_YEARS","SEX","BMI","BOWEL_MOVEMENT_FREQUENCY") ~ "Intrinsic\nHost",
+                       grepl("MEALS", variable) ~ "Lifestyle\n& hygiene",
+                       variable %in% c("EXERCISE_FREQUENCY","POOL_FREQUENCY","COSMETICS_FREQUENCY","PREPARED_MEALS_FREQUENCY","TEETHBRUSHING_FREQUENCY","SMOKING_FREQUENCY") ~ "Lifestyle\n& hygiene",
+                       grepl("FREQUENCY", variable) ~ "Diet",
+                       grepl("ALCOHOL", variable) ~ "Diet",
+                       variable %in% c("DIET_TYPE","TYPES_OF_PLANTS") ~ "Diet",
+                       grepl("SPECIALIZED", variable) ~"Spec.\nDiet",
+                       grepl("REGION", variable) ~ "Reg. of\nBirth",
+                       TRUE ~ "Medical history"
+                            )) %>%
+    merge(enterotypes_shannon_median, by.x="y.level", by.y="Enterotypes_id") %>%
+  mutate(branch ="Clostridiales DMM partitions") %>%
+  mutate(branch = ifelse(y.level %in% c("m18","m14","m16","m17","m7"), "Prevotella DMM partitions",branch)) %>%
+  mutate(branch = ifelse(y.level %in% c("m11","m15","m6","m8","m10","m3","m4","m2"), "Bacteroides DMM partitions",branch)) %>%
+  mutate(branch = ifelse(y.level %in% c("m13"), "Akk.",branch)) %>%
+  mutate(substates = "High") %>%
+  mutate(substates = ifelse(y.level %in% c("m11","m6","m10","m3"), "Medium",substates)) %>%
+  mutate(substates = ifelse(y.level %in% c("m15"), "Low",substates)) %>%
+  filter(branch == "Bacteroides DMM partitions") %>%
+  mutate(substates = substates %>% forcats::fct_relevel("High",after=2 )) %>%
+  mutate(estimate = log(estimate)) %>%
+  mutate(estimate2 = ifelse(p.value>p_cut_off,0,estimate)) %>%
+  group_by(variable) %>%
+  mutate(s=mean(abs(estimate2))) %>% 
+  filter(s>0) %>%
+  ungroup() %>%
+  mutate(y.level = y.level %>% stringr::str_to_upper() %>% forcats::fct_reorder(shannon_median, .desc = TRUE)) %>%
+  
+  mutate(branch = branch %>% gsub("DMM types", "\nDMM types",.)) %>% #pull(variable) %>% grep("COLL",.)
+  filter(!(variable %in% grep("COLL", variable, value = TRUE) )) %>%
+  
+  mutate(variable = gsub("_FREQUENCY|SPECIALIZED_DIET_|ALCOHOL_TYPES_|REGION_BIRTH_","", variable)) %>%
+  mutate(variable = 
+           case_when(grepl("NO_FOOD", variable)~"No food allergy",
+                     grepl("not.eat.gluten", variable)~"Gluten intolerance",
+                     grepl("gluten.IgG", variable)~"Gluten allergy (IgG)",
+                     grepl("WESTENPRICE", variable)~"Low processed",
+                     grepl("OTHER_RESTRICTIONS", variable)~"Other restrictions",
+                     grepl("SEX", variable)~"Sex (male)",
+                     TRUE ~ variable)) %>%
+  mutate(variable = gsub("_|\\."," ", variable)) %>%
+  mutate(variable = variable %>% as.character %>% as.factor() %>% forcats::fct_reorder(s, .desc = TRUE)) %>% 
+     mutate(branch = branch %>% gsub("DMM partitions", "\nDMM partitions",.)) %>%
+  ggplot() + 
+    geom_tile(aes(y=y.level, x=variable, fill=estimate)) + 
+    geom_point(aes(y=y.level, x=variable, alpha=p.value<p_cut_off)) + 
+    scale_fill_gradient2("Log OR", low=scales::muted("blue"), mid="white", high=scales::muted("red")) +
+    facet_grid(substates~variable_group, scale="free", space = "free") + 
+    cowplot::theme_cowplot() +
+    scale_alpha_discrete("FDR < 10%") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+    ylab("Microbiome Bacteroides partitions") + xlab("AGP questionnaire data") 
+
+  
+ 
+
+
+
+
+```
+
+
+
+
+
 to do: plot shannon vs cumulated model weight and make an id card for partition 1 (ref)
 
 
