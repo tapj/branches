@@ -6,7 +6,10 @@ output: html_notebook
 ```{r}
 library(purrr)
 library(dplyr)
+library(magrittr)
+library(DirichletMultinomial)
 
+load("shannon_curated_v3.rda")
 
 ```
 
@@ -394,9 +397,11 @@ enterotypes_prediction %>%
 
 
 
-
+## combine CMD and AGP DMM weights
 
 ```{r fig.height=5, fig.width=10}
+
+load("../df_gutzilla.rda")
 
 row.names(df_gutzilla) = sapply(row.names(df_gutzilla) %>% strsplit(split="g__"), function(x) ifelse(is.na(x[2]), paste0(sample(LETTERS, 1),sample(LETTERS, 1)), x[2]))
 
