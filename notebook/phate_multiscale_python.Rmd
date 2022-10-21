@@ -1,0 +1,303 @@
+---
+title: "python Notebook phate multiscale"
+output: html_notebook
+---
+
+
+```{python}
+import multiscale_phate as mp
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+import scprep
+import os
+
+
+```
+
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(ade4)
+#library(phateR)
+devtools::load_all(reset = FALSE)
+
+library(reticulate)
+```
+
+
+## import outliers file
+```{r}
+
+outliers = readLines(con="outliers_samples.txt")
+
+```
+
+load enterotypes set from DMM analysis
+```{r}
+
+enterotypes = readr::read_csv2("enterotypes_prediction_outliers.csv")[,-1]
+
+```
+
+
+```{r}
+
+genus_phate_agp_df = 
+  genus_prop %>%
+  t() %>%
+  merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% 
+  tibble::column_to_rownames("Row.names") 
+
+
+genus_phate_agp_df
+
+```
+
+
+
+```{python}
+
+genus_phate_agp_df_py = r.genus_phate_agp_df 
+
+genus_phate_agp_df_py.head()
+
+
+
+```
+
+
+```{python eval=FALSE, include=FALSE}
+
+data_norm, libsize = scprep.normalize.library_size_normalize(genus_phate_agp_df_py, return_library_size=True)
+
+data_sqrt = np.sqrt(data_norm)
+
+data_sqrt.head()
+
+data_norm.head()
+r.genus_phate_agp_df
+
+```
+
+
+```{python}
+
+mp_op = mp.Multiscale_PHATE(random_state=1, gamma=0)
+
+levels = mp_op.fit(r.genus_phate_agp_df)
+
+hp_embedding, cluster_viz, sizes_viz = mp_op.fit_transform(r.genus_phate_agp_df)
+
+```
+
+
+```{python}
+
+
+ax = plt.plot(mp_op.gradient)
+ax = plt.scatter(levels, mp_op.gradient[levels], c = 'r', s=100)
+
+plt.show()
+
+
+
+```
+
+
+
+```{python}
+
+scprep.plot.scatter2d(hp_embedding, s = sizes_viz, c = cluster_viz,
+                      fontsize=7, ticks=False,label_prefix="Multiscale PHATE", figsize=(16,12))
+
+
+
+
+plt.show()
+```
+
+```{r}
+
+py$hp_embedding %>% dim
+
+
+```
+
+
+
+```{python}
+
+levels
+
+
+```
+
+
+
+```{python}
+
+### building tree
+
+tree = mp_op.build_tree()
+
+scprep.plot.scatter3d(tree, s= 5,
+                      fontsize=10, ticks=False, figsize=(10,10))
+
+plt.show()
+```
+
+
+```{python}
+
+scprep.plot.scatter3d(tree, c = tree[:,2], s= 1,
+                      fontsize=1, ticks=False, figsize=(10,10))
+
+
+plt.show()
+
+```
+
+
+```{python}
+
+tree_clusters = mp_op.get_tree_clusters(levels[12])
+
+scprep.plot.scatter3d(tree, c = tree_clusters, s= 2,
+                      fontsize=2, ticks=False, figsize=(20,20))
+
+plt.show()
+```
+
+
+
+```{python}
+
+
+
+levels_df = mp_op.NxTs[levels[9]]
+
+#levels_df = mp_op.get_tree_clusters(levels[9])
+
+```
+
+
+
+
+```{r}
+
+genus_prop %>%
+  t() %>%
+  merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% 
+  #tibble::column_to_rownames("Row.names") %>%
+  pull("Row.names") %>% 
+  data.frame(sample_name=., phate_cluster=py$levels_df %>% unlist() %>% as.character) %>%
+  merge(enterotypes, by="sample_name") %>%
+  xtabs(~ phate_cluster + Enterotypes_id, data=.) %>%
+  heatmap(xlab = "DMM", ylab = "coarse multiscale PHATE" )
+
+
+
+
+```
+
+
+```{python}
+
+
+
+levels_df = mp_op.NxTs[levels[12]]
+
+#levels_df = mp_op.get_tree_clusters(levels[9])
+
+```
+
+
+
+
+```{r}
+
+genus_prop %>%
+  t() %>%
+  merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% 
+  #tibble::column_to_rownames("Row.names") %>%
+  pull("Row.names") %>% 
+  data.frame(sample_name=., phate_cluster=py$levels_df %>% unlist() %>% as.character) %>%
+  merge(enterotypes, by="sample_name") %>%
+  xtabs(~ phate_cluster + Enterotypes_id, data=.) %>%
+  heatmap(xlab = "DMM", ylab = "coarsest multiscale PHATE" )
+
+
+
+
+```
+
+
+```{python}
+
+coarse_embedding, coarse_clusters, coarse_sizes = mp_op.transform(visualization_level = levels[5],
+                                                                  cluster_level = levels[12])
+
+
+
+
+```
+
+
+
+```{python}
+
+
+scprep.plot.scatter2d(coarse_embedding, s = 100*np.sqrt(coarse_sizes), c = coarse_clusters,
+                      fontsize=16, ticks=False,label_prefix="Multiscale PHATE", figsize=(10,8))
+
+scprep.plot.scatter2d(coarse_embedding, s = coarse_sizes, c = coarse_clusters,
+                      fontsize=16, ticks=False,label_prefix="Multiscale PHATE", figsize=(10,8))
+
+
+plt.show()
+```
+
+
+
+```{python}
+
+
+
+branches_levels_df = mp_op.NxTs[levels[12]]
+
+partitions_levels_df = mp_op.NxTs[levels[9]]
+
+#levels_df = mp_op.get_tree_clusters(levels[9])
+
+```
+
+```{r}
+
+
+genus_prop %>%
+  t() %>%
+  merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% 
+  #tibble::column_to_rownames("Row.names") %>%
+  pull("Row.names") %>% 
+  data.frame(sample_name=., branches_phate_cluster=py$branches_levels_df %>% unlist() %>% as.character) %>%
+  merge(enterotypes, by="sample_name") %>%
+  merge(genus_phate$embedding, by.x="sample_name", by.y="row.names") %>%
+  mutate(branch ="Clostridiales DMM types") %>%
+  mutate(branch = ifelse(Enterotypes_id %in% c(18,14,16,17,7), "Prevotella DMM types",branch)) %>%
+  mutate(branch = ifelse(Enterotypes_id %in% c(11,15,6,8,10,3,4,2), "Bacteroides DMM types",branch)) %>%
+  mutate(branch = ifelse(Enterotypes_id %in% c(13), "Akkermansia DMM types",branch)) %>%
+  #filter(Enterotypes_id %in% c(11,15,6,8,10,3,4,2)) %>%
+  ggplot() + geom_point(aes(x=PHATE1, y=PHATE2, col=branches_phate_cluster), size=1, alpha=0.5) +
+  scale_color_brewer("coarsest PHATE\n multiscale cluster",type="qual") + theme_classic() +
+  #ggrepel::geom_label_repel(data = enterotypes_phate_centroid, aes(x=PHATE1, y=PHATE2, label=Enterotypes_id)) + 
+  cowplot::theme_cowplot()
+
+
+
+```
+
+
