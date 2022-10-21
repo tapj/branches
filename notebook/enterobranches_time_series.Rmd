@@ -2558,7 +2558,39 @@ f_b_ratio %>%
 
 
 ```
+### f_b_ratio vs alpha
 
+```{r}
+frac_fun=function(x) 1/x
+
+f_b_ratio %>%
+  merge(enterotypes,., by.y="row.names", by.x="sample_name") %>%
+  filter(set != "outliers") %>%
+  #filter(value>0.80) %>%
+  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "Prevotella DMM types",
+                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides DMM types",
+                              Enterotypes_id %in% c(12,1,5,9) ~ "Clostridiales DMM types",
+                              Enterotypes_id %in% c(13) ~ "Akkermansia DMM types",
+                              TRUE ~ "outliers")
+         ) %>%
+  filter(branches=="Bacteroides DMM types") %>%
+  merge(shannon, by.x="sample_name", by.y="row.names") %>%
+  mutate(substates = "High (m2, m4, m8)") %>%
+  mutate(substates = ifelse(Enterotypes_id %in% c("11","6","10","3"), "Medium (m3, m6, m10, m11)",substates)) %>%
+  mutate(substates = ifelse(Enterotypes_id %in% c("15"), "Low (m15)",substates)) %>%
+  mutate(substates = substates %>% forcats::fct_relevel("High (m2, m4, m8)",after=2 )) %>%
+  ggplot() + 
+  geom_point(aes(x=ratio,y=shannon, col=substates), alpha=0.5)  + 
+  scale_x_continuous("Faecalibacterium:Bacteroides ratio\n from samples classified in\nBacteroides enriched branch",trans="log2", labels=scales::trans_format("frac_fun",scales::label_math(expr = 1/.x, format = force))) +
+  geom_vline(xintercept = 1/4, col="red") +
+  geom_vline(xintercept = 1/64, col="red") +
+  scale_color_brewer("Microbiota DMM Partitions\nclassified thank to\nFaecalibacterium:Bacteroides ratio", palette = 8, type="div") +
+  theme_classic()
+
+
+
+
+```
 
 
 ### prevotella bacteroides ratio
