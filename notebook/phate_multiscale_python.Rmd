@@ -46,6 +46,8 @@ enterotypes = readr::read_csv2("enterotypes_prediction_outliers.csv")[,-1]
 
 ```{r}
 
+load("genus_prop_agp.rda")
+
 genus_phate_agp_df = 
   genus_prop %>%
   t() %>%
@@ -112,7 +114,7 @@ plt.show()
 ```{python}
 
 scprep.plot.scatter2d(hp_embedding, s = sizes_viz, c = cluster_viz,
-                      fontsize=7, ticks=False,label_prefix="Multiscale PHATE", figsize=(16,12))
+                      fontsize=7, ticks=False,label_prefix="Multiscale PHATE", figsize=(7,7))
 
 
 
@@ -238,7 +240,7 @@ genus_prop %>%
 
 ```{python}
 
-coarse_embedding, coarse_clusters, coarse_sizes = mp_op.transform(visualization_level = levels[5],
+coarse_embedding, coarse_clusters, coarse_sizes = mp_op.transform(visualization_level = levels[9],
                                                                   cluster_level = levels[12])
 
 
@@ -251,11 +253,11 @@ coarse_embedding, coarse_clusters, coarse_sizes = mp_op.transform(visualization_
 ```{python}
 
 
-scprep.plot.scatter2d(coarse_embedding, s = 100*np.sqrt(coarse_sizes), c = coarse_clusters,
-                      fontsize=16, ticks=False,label_prefix="Multiscale PHATE", figsize=(10,8))
+#scprep.plot.scatter2d(coarse_embedding, s = 100*np.sqrt(coarse_sizes), c = coarse_clusters,
+#                      fontsize=16, ticks=False,label_prefix="Multiscale PHATE", figsize=(10,8))
 
 scprep.plot.scatter2d(coarse_embedding, s = coarse_sizes, c = coarse_clusters,
-                      fontsize=16, ticks=False,label_prefix="Multiscale PHATE", figsize=(10,8))
+                      fontsize=10, ticks=False,label_prefix="Multiscale PHATE", figsize=(10,8))
 
 
 plt.show()
@@ -276,6 +278,15 @@ partitions_levels_df = mp_op.NxTs[levels[9]]
 ```
 
 ```{r}
+
+
+genus_phate = 
+  genus_prop %>%
+  t() %>%
+  merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% 
+  tibble::column_to_rownames("Row.names") %>%
+  phateR::phate(gamma=0, t=60, seed=666)
+
 
 
 genus_prop %>%
