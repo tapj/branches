@@ -27,7 +27,7 @@ devtools::load_all(reset = FALSE)
 
 library(reticulate)
 ```
-
+# AGP dataset
 
 ## import outliers file
 ```{r}
@@ -311,4 +311,166 @@ genus_prop %>%
 
 ```
 
+# CMD dataset
+
+
+
+
+
+```{r}
+enterotypes = read.csv2("enterotypes_curated_v3_prediction.csv", row.names=1)
+load("curated_v3_genus_prop_files.rda")
+
+
+dominant_mass_per_sample %>%
+  t %>%
+  as.data.frame() %>%
+  arrange(V1) %>%
+  filter(V1>0.25) %>% row.names() -> sample_curated_to_select
+
+
+
+
+
+```
+
+
+```{r}
+
+
+
+
+curated_v3_genus_prop %>%
+  filter(Genus %in% c(names(top_genus_mass_curated),"Methanobrevibacter")) %>%
+  tibble::column_to_rownames("Genus") %>%
+  select(all_of(sample_curated_to_select)) %>%
+  t() -> genus_phate_cmd_df
+  #as.data.frame() %>%
+  #merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% head
+  
+genus_phate = 
+  genus_phate_cmd_df %>%
+  
+  phateR::phate(gamma=0, t=40, seed=666)
+
+
+
+genus_phate$embedding %>% dim
+genus_phate_cmd_df %>% dim
+
+```
+
+
+
+```{python}
+
+mp_op = mp.Multiscale_PHATE(random_state=666, gamma=0)
+
+levels = mp_op.fit(r.genus_phate_cmd_df)
+
+hp_embedding, cluster_viz, sizes_viz = mp_op.fit_transform(r.genus_phate_cmd_df)
+
+```
+
+
+
+```{python}
+
+
+ax = plt.plot(mp_op.gradient)
+
+plt.show()
+
+ax = plt.scatter(levels, mp_op.gradient[levels], c = 'r', s=100)
+
+plt.show()
+
+
+
+```
+
+
+
+
+```{python}
+
+scprep.plot.scatter2d(hp_embedding, s = sizes_viz, c = cluster_viz,
+                      fontsize=7, ticks=False,label_prefix="Multiscale PHATE", figsize=(7,7))
+
+
+
+
+plt.show()
+```
+
+
+
+
+
+```{python}
+
+
+
+levels_df = mp_op.NxTs[levels[7]]
+
+#levels_df = mp_op.get_tree_clusters(levels[9])
+
+```
+
+
+
+
+```{r fig.height=10, fig.width=10}
+
+#curated_v3_genus_prop %>%
+#  t() %>%
+  #merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% 
+  #tibble::column_to_rownames("Row.names") %>%
+  
+genus_phate$embedding %>%
+  row.names() %>% 
+  data.frame(sample_name=., phate_cluster=py$levels_df %>% unlist() %>% as.character) %>%
+  merge(enterotypes, by="sample_name") %>%
+  xtabs(~ phate_cluster + Enterotypes_id, data=.) %>%
+  heatmap(xlab = "DMM", ylab = "coarse multiscale PHATE" )
+
+
+
+
+```
+
+
+```{python}
+
+levels_df = mp_op.NxTs[levels[7]]
+
+branches_levels_df = mp_op.NxTs[levels[12]]
+
+partitions_levels_df = mp_op.NxTs[levels[9]]
+
+#levels_df = mp_op.get_tree_clusters(levels[9])
+
+```
+
+
+```{r}
+
+
+genus_phate$embedding %>%
+  row.names() %>% 
+  data.frame(sample_name=., branches_phate_cluster=py$levels_df %>% unlist() %>% as.character) %>%
+  merge(enterotypes, by="sample_name") %>%
+  merge(genus_phate$embedding, by.x="sample_name", by.y="row.names") %>%
+  #mutate(branch ="Clostridiales DMM types") %>%
+  #mutate(branch = ifelse(Enterotypes_id %in% c(18,14,16,17,7), "Prevotella DMM types",branch)) %>%
+  #mutate(branch = ifelse(Enterotypes_id %in% c(11,15,6,8,10,3,4,2), "Bacteroides DMM types",branch)) %>%
+  #mutate(branch = ifelse(Enterotypes_id %in% c(13), "Akkermansia DMM types",branch)) %>%
+  #filter(Enterotypes_id %in% c(11,15,6,8,10,3,4,2)) %>%
+  ggplot() + geom_point(aes(x=PHATE1, y=PHATE2, col=branches_phate_cluster), size=1, alpha=0.5) +
+  scale_color_discrete("coarse PHATE\n multiscale cluster") + theme_classic() +
+  #ggrepel::geom_label_repel(data = enterotypes_phate_centroid, aes(x=PHATE1, y=PHATE2, label=Enterotypes_id)) + 
+  cowplot::theme_cowplot()
+
+
+```
 

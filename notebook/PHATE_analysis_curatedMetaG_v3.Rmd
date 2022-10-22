@@ -120,6 +120,7 @@ dominant_mass_per_sample %>%
   arrange(V1) %>%
   filter(V1>0.25) %>% row.names() -> sample_curated_to_select
 
+save(top_genus_mass_curated,dominant_mass_per_sample,curated_v3_genus_prop, file="curated_v3_genus_prop_files.rda")
 
 curated_v3_genus_prop %>%
   filter(Genus %in% names(top_genus_mass_curated)) %>% 

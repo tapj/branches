@@ -93,7 +93,7 @@ species_phate =
   merge(enterotypes %>% filter(set != "outliers", value>0.80) %>% select(sample_name), by.x="row.names", by.y="sample_name") %>% 
   tibble::column_to_rownames("Row.names") %>%
   phateR::phate(gamma=0, t=60, seed=666)
-
+ 
 
 
 
