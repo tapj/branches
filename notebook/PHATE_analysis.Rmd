@@ -117,7 +117,7 @@ genus_phate$embedding %>%
   mutate(branch = ifelse(Enterotypes_id %in% c(13), "Akkermansia DMM types",branch)) %>%
   #filter(Enterotypes_id %in% c(11,15,6,8,10,3,4,2)) %>%
   ggplot() + geom_point(aes(x=PHATE1, y=PHATE2, col=branch), size=1, alpha=0.5) +
-  scale_color_brewer("main taxa\nDMM types",type="qual") + theme_classic() +
+  scale_color_brewer("main taxa\nDMM partitions",type="qual") + theme_classic() +
   ggrepel::geom_label_repel(data = enterotypes_phate_centroid, aes(x=PHATE1, y=PHATE2, label=Enterotypes_id)) + cowplot::theme_cowplot() -> fig3C #+
   #facet_wrap(~branch)
   
@@ -130,6 +130,28 @@ fig3C
 ggsave("AGP_branches_DMM_types.pdf")
 
 ```
+#### to put in B&W
+```{r}
+
+
+genus_phate$embedding %>%
+  merge(enterotypes, by.x="row.names", by.y="sample_name") %>%
+  mutate(branch ="Clostridiales DMM types") %>%
+  mutate(branch = ifelse(Enterotypes_id %in% c(18,14,16,17,7), "Prevotella DMM types",branch)) %>%
+  mutate(branch = ifelse(Enterotypes_id %in% c(11,15,6,8,10,3,4,2), "Bacteroides DMM types",branch)) %>%
+  mutate(branch = ifelse(Enterotypes_id %in% c(13), "Akkermansia DMM types",branch)) %>%
+  #filter(Enterotypes_id %in% c(11,15,6,8,10,3,4,2)) %>%
+  ggplot() + geom_point(aes(x=PHATE1, y=PHATE2, col=branch, shape=branch), size=1, alpha=0.5) +
+  scale_color_grey("main taxa\nDMM partitions") + scale_shape("main taxa\nDMM partitions") + theme_classic() +
+  ggrepel::geom_label_repel(data = enterotypes_phate_centroid, aes(x=PHATE1, y=PHATE2, label=Enterotypes_id)) + cowplot::theme_cowplot()
+
+
+
+
+
+
+```
+
 
 ```{r}
 
