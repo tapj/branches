@@ -1196,6 +1196,30 @@ enterotypes_time_series_stability %>%
 
 ```
 
+
+#### to put network in BW
+```{r}
+
+ggraph(graph, weights=p, layout="stress") +
+  geom_edge_fan(aes(alpha = p, color=p), arrow=arrow(angle = 20, length = unit(4, "mm")), end_cap = circle(3, 'mm')) + 
+  #scale_alpha_ordinal("participants proportion") +
+  #geom_node_point(aes(color=branches,size=stability*2)) +
+  #geom_node_point(aes(color=branches,size=stability)) +
+  geom_node_label(aes(label=paste0(partition_names,branches %>% stringr::str_sub(start=1, end=1)), 
+                      fill=paste0(branches %>% gsub("DMM types","",.)," (",branches %>% stringr::str_sub(start=1, end=1),")"), size=stability)) + 
+  #geom_node_text(aes(label=partition_names), repel=TRUE) +
+  #scale_color_grey() +
+  scale_fill_grey("main taxa DMM partitions") +
+  scale_alpha_continuous("participants proportion") + 
+  scale_edge_alpha("ind. proportion (switch)") + 
+  scale_edge_color_continuous("ind. proportion (switch)", low = "grey", high ="black", guide = FALSE) +
+  scale_size_continuous("ind. proportion (stable)", trans="log10", limits = c(0.1,0.9), breaks = c(0.3,0.6,0.9)) +
+  theme_void()
+
+```
+
+
+
 ```{r}
 
 metadata %>%
@@ -2536,6 +2560,63 @@ f_b_ratio %>%
 ```
 
 
+#### Fprau Bacteroides in BW
+```{r fig.height=8, fig.width=6}
+
+f_b_ratio %>%
+  merge(enterotypes,., by.y="row.names", by.x="sample_name") %>%
+  filter(set != "outliers") %>%
+  #filter(value>0.80) %>%
+  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "Prevotella DMM types",
+                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides DMM types",
+                              Enterotypes_id %in% c(12,1,5,9) ~ "Clostridiales DMM types",
+                              Enterotypes_id %in% c(13) ~ "Akkermansia DMM types",
+                              TRUE ~ "outliers")
+         ) %>%
+  filter(branches=="Bacteroides DMM types") %>% 
+  #pull(ratio) %>% log2() %>% microbiome::bimodality(method = "Sarle.finite.sample", bs.iter=100, verbose=TRUE)
+  ggplot() + geom_density(aes(x=ratio)) + 
+   scale_x_continuous(trans="log2", labels=scales::trans_format("frac_fun",scales::label_math(expr = 1/.x, format = force))) +
+  #geom_vline(xintercept = 1/5) + 
+  cowplot::theme_cowplot() +
+  xlab("Faecalibacterium Bacteroides ratio\nwithin Bacteroides enriched branch") -> p_fprau_density
+
+
+
+f_b_ratio %>%
+  merge(enterotypes,., by.y="row.names", by.x="sample_name") %>%
+  filter(set != "outliers") %>%
+  #filter(value>0.80) %>%
+  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "Prevotella DMM types",
+                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides DMM types",
+                              Enterotypes_id %in% c(12,1,5,9) ~ "Clostridiales DMM types",
+                              Enterotypes_id %in% c(13) ~ "Akkermansia DMM types",
+                              TRUE ~ "outliers")
+         ) %>%
+  filter(branches=="Bacteroides DMM types") %>% 
+  mutate(Enterotypes_id = Enterotypes_id %>% as.character) %>%
+  merge(enterotypes_time_series_stability, by="Enterotypes_id") %>%
+  mutate(Enterotypes_id = Enterotypes_id %>% forcats::fct_reorder(stability)) %>%
+  group_by(Enterotypes_id) %>%
+  mutate(stability = median(stability)) %>%
+  #pull(ratio) %>% log2() %>% microbiome::bimodality(method = "Sarle.finite.sample", bs.iter=100, verbose=TRUE)
+  ggplot() + geom_boxplot(aes(x=ratio,y=Enterotypes_id, fill=stability)) +
+  scale_x_continuous(trans="log2", labels=scales::trans_format("frac_fun",scales::label_math(expr = 1/.x, format = force))) +
+  scale_fill_gradient(low="white",high="black") +
+  #geom_vline(xintercept = 1/5) + 
+  cowplot::theme_cowplot() +
+  ylab("Bacteroides DMM partitions") +
+  xlab("Faecalibacterium Bacteroides ratio") -> p_fprau_partition
+
+
+p_fprau_density/p_fprau_partition
+
+
+```
+
+
+
+
 ```{r eval=FALSE, include=FALSE}
 
 f_b_ratio %>%
@@ -2591,6 +2672,44 @@ f_b_ratio %>%
 
 
 ```
+#### f_b_ratio vs alpha in BW
+
+
+```{r}
+
+frac_fun=function(x) 1/x
+
+f_b_ratio %>%
+  merge(enterotypes,., by.y="row.names", by.x="sample_name") %>%
+  filter(set != "outliers") %>%
+  #filter(value>0.80) %>%
+  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "Prevotella DMM types",
+                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides DMM types",
+                              Enterotypes_id %in% c(12,1,5,9) ~ "Clostridiales DMM types",
+                              Enterotypes_id %in% c(13) ~ "Akkermansia DMM types",
+                              TRUE ~ "outliers")
+         ) %>%
+  filter(branches=="Bacteroides DMM types") %>%
+  merge(shannon, by.x="sample_name", by.y="row.names") %>%
+  mutate(substates = "High (m2, m4, m8)") %>%
+  mutate(substates = ifelse(Enterotypes_id %in% c("11","6","10","3"), "Medium (m3, m6, m10, m11)",substates)) %>%
+  mutate(substates = ifelse(Enterotypes_id %in% c("15"), "Low (m15)",substates)) %>%
+  mutate(substates = substates %>% forcats::fct_relevel("High (m2, m4, m8)",after=2 )) %>%
+  ggplot() + 
+  geom_point(aes(x=ratio,y=shannon, col=substates), alpha=0.7)  + 
+  scale_x_continuous("Faecalibacterium:Bacteroides ratio\n from samples classified in\nBacteroides enriched branch",trans="log2", labels=scales::trans_format("frac_fun",scales::label_math(expr = 1/.x, format = force))) +
+  geom_vline(xintercept = 1/4, col="black", linetype=2, size=1.5) +
+  geom_vline(xintercept = 1/64, col="black", linetype=2, size=1.5) +
+  scale_colour_grey("Microbiota DMM Partitions\nclassified thank to\nFaecalibacterium:Bacteroides ratio") +
+  #scale_color_brewer("Microbiota DMM Partitions\nclassified thank to\nFaecalibacterium:Bacteroides ratio", palette = 8, type="div") +
+  theme_classic()
+
+
+
+
+```
+
+
 
 
 ### prevotella bacteroides ratio
