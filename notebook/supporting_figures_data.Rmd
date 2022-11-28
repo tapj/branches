@@ -1,0 +1,120 @@
+---
+title: "supporting figures data"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+
+
+```
+
+
+
+```{r}
+
+load("figures/fig1_aero.rda")
+load("figures/fig1_bifido_bacteroides.rda")
+load("figures/fig1_branches_centroids.rda")
+load("figures/fig1_dmm_alpha.rda")
+load("figures/fig1_prevotella_bacteroides.rda")
+load("figures/fig1_shannon.rda")
+
+load("figures/fig1_gmhi.rda")
+
+```
+
+
+
+```{r}
+
+fig1B$data %>% select(CMD_DMM_partition_id = Enterotypes_id, taxa, dmm_alpha=value) -> SuppFigureData1
+
+SuppFigureData1
+
+write.csv2(SuppFigureData1, file="SuppFigureData1.csv")
+
+
+```
+
+
+
+
+
+```{r}
+
+fig1A$data %>% select(CMD_DMM_partition_id = Enterotypes_id, sample_name, shannon) %>% unique %>%
+
+  merge(fig1C$data %>% select(sample_name, PHATE1, PHATE2, Prevotella_Bacteroides_ratio = P_B_ratio), by="sample_name") %>%
+
+  merge(fig1D$data %>% select(sample_name, Bifidobacterium_Bacteroides_ratio = B_B_ratio), by="sample_name") %>%
+
+  merge(fig1E$data %>% select(sample_name = Row.names, anaero_score) , by="sample_name") %>%
+
+  merge(fig1H$data %>%  select(sample_name = Row.names, branch), by="sample_name") %>% 
+
+  merge(fig1F_gmhi$data %>%  select(sample_name = Row.names, GMHI) , by="sample_name") %>% 
+  
+  arrange(sample_name) -> SuppFigureData2
+
+SuppFigureData2
+
+write.csv2(SuppFigureData2, file="SuppFigureData2.csv")
+
+```
+
+
+
+```{r}
+
+load("figures/microbiota_types.rda")
+load("figures/microbiota_annotation.rda")
+
+
+microbiota_types %>%
+  reshape2::melt() %>%
+  merge(.,microbiota_annotation, by.x="Var2",by.y="row.names") %>%
+  select(partition_DMM_id=Var2, taxa=Var1, DMM_alpha=value, dataset) -> SuppFigureData3
+  
+
+write.csv2(SuppFigureData3, file="SuppFigureData3.csv")
+
+
+
+
+```
+
+
+
+```{r}
+load("figures/fig3B_agp_shannon_PHATE.rda")
+load("figures/fig3C_agp_branches_PHATE.rda")
+
+fig3B$data %>%
+  merge(fig3C$data %>% select("Row.names","branch"), by="Row.names") %>%
+  select(-set, -value) %>%
+  dplyr::rename(sample_name=`Row.names`, Prevotella_Bacteroides_ratio=prev_bact_ratio, AGP_DMM_partition_id=Enterotypes_id) %>%
+  mutate(AGP_DMM_partition_id = paste0("Mg",AGP_DMM_partition_id )) -> SuppFigureData4
+
+write.csv2(SuppFigureData4, file="SuppFigureData4.csv")
+
+
+```
+
+
+
+```{r}
+load("regm_tidy.rda") 
+
+regm_tidy %>%
+  select(AGP_DMM_partition_id = y.level, variable, coef_estimate = estimate, coef_low_95 = conf.low, coef_high_95 = conf.high, p.value) -> SuppFigureData5
+  
+  
+
+SuppFigureData5
+
+write.csv2(SuppFigureData5, file="SuppFigureData5.csv")
+
+
+```
+
