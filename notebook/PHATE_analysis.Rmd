@@ -278,6 +278,17 @@ fig3B
 ggsave("genus_phate_shannon.pdf")
 
 ```
+#### export fig data
+```{r}
+
+save(fig3B, file="figures/fig3B_agp_shannon_PHATE.rda")
+save(fig3D, file="figures/fig3D_agp_prevotella_bacteroides_PHATE.rda")
+save(fig3C, file="figures/fig3C_agp_branches_PHATE.rda")
+
+```
+
+
+
 ## figure 3 heatmap apg/curated and branches
 
 

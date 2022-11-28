@@ -423,12 +423,18 @@ merge(df_curated_v3 %>% select(-m19,-m22,-m23,-m24),df_gutzilla, by="row.names")
   #dplyr::rename
   tibble::column_to_rownames("Microbiota") -> microbiota_annotation
 
+save(microbiota_annotation, file="figures/microbiota_annotation.rda")
+
 
 merge(df_curated_v3%>% select(-m19,-m22,-m23,-m24),df_gutzilla, by="row.names") %>% 
   select(contains("m",ignore.case = TRUE)) %>% 
   select(-Mean.x,-Mean.y) %>%
   #mutate(Row.names = Row.names %>% str_split_fixed(pattern =";",  n = 6) %>% .[,6] %>% gsub("g__","",.)) %>%
   tibble::column_to_rownames("Row.names") %>% as.matrix() -> microbiota_types
+
+save(microbiota_types, file="figures/microbiota_types.rda")
+
+
 
 microbiota_types_jsd = Rfast::Dist(t(microbiota_types)) 
 colnames(microbiota_types_jsd) = row.names(microbiota_types_jsd) = colnames(microbiota_types)

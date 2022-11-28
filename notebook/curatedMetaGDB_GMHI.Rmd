@@ -14,10 +14,10 @@ devtools::load_all()
 library(magrittr)
 library(forcats)
 
-load(system.file("data-raw/curatedMetaG/curatedMetaGData.rda", package = "agp"))
+load(system.file("data-raw/curatedMetaG/curatedMetaGData.rda", package = "gutzilla"))
 
-MN_species = readLines(system.file("data-raw/MN_species.txt", package = "agp"))
-MH_species = readLines(system.file("data-raw/MH_species.txt", package = "agp"))
+MN_species = readLines(system.file("data-raw/MN_species.txt", package = "gutzilla"))
+MH_species = readLines(system.file("data-raw/MH_species.txt", package = "gutzilla"))
 
 ```
 

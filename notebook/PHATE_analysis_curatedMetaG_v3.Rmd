@@ -7,7 +7,7 @@ output: html_notebook
 
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
 library(phyloseq)
 devtools::load_all()
@@ -447,6 +447,8 @@ curated_v3_genus %>%
   mutate(P_B_ratio = (`Prevotella`+1)/(`Bacteroides`+1)) %>%
   ggplot() + geom_point(aes(x=PHATE1, y= PHATE2, col=P_B_ratio %>% log2()), size=1, alpha=0.5) + scale_color_viridis_c("Prevotella/\nBacteroides\nratio (log2)", option="cividis") + cowplot::theme_cowplot() -> fig1C
 
+save(fig1C, 
+     file="figures/fig1_prevotella_bacteroides.rda")
 
 # curated_v3_genus %>%
 #   tibble::column_to_rownames("Genus") %>%
@@ -480,6 +482,7 @@ curated_v3_genus %>%
   mutate(B_B_ratio = (`Bifidobacterium`+1)/(`Bacteroides`+1)) %>%
   ggplot() + geom_point(aes(x=PHATE1, y= PHATE2, col=B_B_ratio %>% log2()), size=1, alpha=0.5) + scale_color_viridis_c("Bifidobacterium/\nBacteroides\nratio (log2)", option="cividis") + cowplot::theme_cowplot() -> fig1D
 
+save(fig1D, file="figures/fig1_bifido_bacteroides.rda")
 
 curated_v3_genus %>%
   tibble::column_to_rownames("Genus") %>%
@@ -532,7 +535,7 @@ enterotypes %>%
 fig1B = figS5A
 
 
-
+save(fig1B, file = "figures/fig1_dmm_alpha.rda")
 
 ```
 
@@ -593,6 +596,11 @@ genus_phate$embedding %>%
   ggrepel::geom_label_repel(data = enterotypes_phate_centroid, aes(x=PHATE1, y=PHATE2, label=Enterotypes_id), max.overlaps = 20) -> fig1H
 
 fig1H
+
+save(fig1H, file = "figures/fig1_branches_centroids.rda")
+
+
+
 
 ```
 
@@ -746,9 +754,17 @@ genus_phate$embedding %>%
 
 fig1F_gmhi
 
+save(fig1F_gmhi,file="figures/fig1_gmhi.rda")
+
+
 ggsave("gmhi_curated_v3_phate.pdf")
 
 ```
+
+
+
+
+
 ```{r}
 
 genus_phate$embedding %>%
@@ -974,6 +990,8 @@ enterotypes %>%
   xlab("DMM partitions") +
   cowplot::theme_cowplot() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) -> fig1A
 
+save(fig1A, file = "figures/fig1_shannon.rda")
+
 # enterotypes %>%
 #   merge(dominance, by.x="sample_name", by.y="row.names" ) %>%
 #   mutate(Enterotypes_id = paste0("m",Enterotypes_id)) %>%
@@ -1140,6 +1158,7 @@ genus_phate$embedding %>%
   ylab("Infant samples (%)") +
   xlab("DMM partitions") -> fig1C2
 
+save(fig1C2, file = "figures/fig1_infant_partition.rda")
 
 figS7A + figS7B + plot_annotation(tag_levels = "A")
 

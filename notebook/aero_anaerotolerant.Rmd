@@ -45,6 +45,8 @@ genus_phate$embedding %>%
 
  fig1E
  
+ save(fig1E, file="figures/fig1_aero.rda")
+ 
  ggsave("aero_phate_plot.pdf")
 
 
