@@ -1,6 +1,6 @@
 ---
 layout: default
-title: enterobranches - a guide
+title: gut microbiome branches and partitions - R notebook compendium
 ---
 
 ## Introduction
