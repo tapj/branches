@@ -21,22 +21,22 @@ We used redbiom (McDonald et al 2019) to fetch data from Qiita (Gonzalez et al 2
 
 you may found scripts in
 
->data-raw/qiime/
+* data-raw/qiime/
 
 if you want to play with redbiom, I advise you to follow this [tutorial](https://forum.qiime2.org/t/querying-for-public-microbiome-data-in-qiita-using-redbiom/4653)
 You need to install redbiom and QIIME2019.10 and then run this sh script 
 
->submit_all.sh
+* submit_all.sh
 
 
 
 ### CMD data
 
->data-raw/curatedMetaG
+* data-raw/curatedMetaG
 
 you run this R script
 
-> import_curated_v3.r
+* import_curated_v3.r
 
 
 
@@ -45,17 +45,17 @@ you run this R script
 
 in this study we used United Nation Statistical department country database to group country into subregions, you may retrieve data here
 
->https://datahub.io/core/country-codes/r/country-codes.csv
+* https://datahub.io/core/country-codes/r/country-codes.csv
 
 and code to import
 
->data-raw/impot_UNSD_countries.r
+* data-raw/impot_UNSD_countries.r
 
 
 
 We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uploads/2020/05/OXYTOL-1.3.xlsx) database v 1.3 was used to associate each microbial genus to an aerotolerant or obligate anaerobic metabolism (Million et al 2016).
 
->data-raw/import_oxytol.r
+* data-raw/import_oxytol.r
 
 
 
@@ -67,26 +67,26 @@ We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uplo
 
 1. raw CMD data (count, taxa, metadata) were packed into
 
->data-raw/curatedMetaG/curated_v3_otu_tax.rda
+* data-raw/curatedMetaG/curated_v3_otu_tax.rda
 
 2. raw AGP data used in this study could be found here
 
 * genus counts
 
-> data-raw/qiime/generated_files_20190512/taxa/genus.qza
+  * data-raw/qiime/generated_files_20190512/taxa/genus.qza
 
 * metadata
 
-> data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv
+  * data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv
 
 
 * alpha-diversity (shannon)
 
-> data-raw/qiime/generated_files_20190512/alpha/shannon.qza
+  * data-raw/qiime/generated_files_20190512/alpha/shannon.qza
 
 * previoulsy identified outliers
 
-> notebook/outliers_samples.txt
+  * notebook/outliers_samples.txt
 
 
 
