@@ -1,5 +1,6 @@
 ---
 layout: default
+title: enterobranches - a guide
 ---
 
 ## Introduction
@@ -109,7 +110,7 @@ We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uplo
 
 * notebook/outliers_samples.txt
 
-  * notebook/hierarchical_enterotyping.Rmd (that called /notebook/enterotyping.R)
+  * [notebook/hierarchical_enterotyping.Rmd](hierarchical_enterotyping.nb.html) (that called /notebook/enterotyping.R)
   
     * notebook/fit_genus_bootstrap.rda
     
