@@ -116,7 +116,7 @@ We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uplo
     
     * notebook/enterotypes_prediction_outliers.csv
     
-  * notebook/PHATE_analysis.Rmd
+  * [notebook/PHATE_analysis.Rmd](PHATE_analysis.nb.html)
     
     * figures/*
     
@@ -135,7 +135,7 @@ We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uplo
     
     * notebook/fit_genus_list_*_curated_v3.rda
       
-      * notebook/curated_v3_enterotyping.Rmd
+      * [notebook/curated_v3_enterotyping.Rmd](curated_v3_enterotyping.nb.html)
       
         * figures/*
         
@@ -143,17 +143,17 @@ We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uplo
         
         * notebook/enterotypes_curated_v3_prediction.csv
         
-  * notebook/PHATE_analysis_curatedMetaG_v3.Rmd (use *genus_alpha_weight_curated.rda* also as input)
+  * [notebook/PHATE_analysis_curatedMetaG_v3.Rmd](PHATE_analysis_curatedMetaG_v3.nb.html) (use *genus_alpha_weight_curated.rda* also as input)
   
     * notebook/curated_v3_species_count.rda
-      * notebook/diff_analysis_branche_CMD.Rmd
+      * [notebook/diff_analysis_branche_CMD.Rmd](diff_analysis_branche_CMD.nb.html)
         * notebook/curated_v3_species_clr.rda
         
     * notebook/curated_v3_genus_prop_files.rda
       * notebook/phate_multiscale_python.Rmd
       
     * figures/*
-      * notebook/supporting_figures_data.Rmd
+      * [notebook/supporting_figures_data.Rmd](supporting_figures_data.nb.html)
 
 **logistic regression**
 
@@ -161,7 +161,7 @@ We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uplo
 * data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv
 * data-raw/qiime/generated_files_20190512/alpha/shannon.qza
 
-  * notebook/ordinal_logistic_regression.Rmd
+  * [notebook/ordinal_logistic_regression.Rmd](ordinal_logistic_regression.nb.html)
     * notebook/agp_metadata_enterotypes_num.rda
     * notebook/regm2_tidy.rda
     * notebook/regm2_plot.rda
@@ -174,7 +174,7 @@ We also used the [OXYTOL](https://www.mediterranee-infection.com/wp-content/uplo
 * data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv
 * data-raw/qiime/generated_files_20190512/alpha/shannon.qza
 
-  * notebook/enterobranches_time_series.Rmd
+  * [notebook/enterobranches_time_series.Rmd](enterobranches_time_series.nb.html)
     
     * figures/*
 
