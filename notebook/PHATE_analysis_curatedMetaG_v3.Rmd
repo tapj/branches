@@ -16,6 +16,8 @@ library(forcats)
 library(ggplot2)
 library(tidygraph)
 library(dplyr)
+library(patchwork)
+library(ggtext)
 
 ```
 
@@ -533,7 +535,7 @@ enterotypes %>%
 
 
 fig1B = figS5A
-
+fig1B
 
 save(fig1B, file = "figures/fig1_dmm_alpha.rda")
 
@@ -822,7 +824,10 @@ genus_phate$embedding %>%
 
 fig1F
 
-ggsave("shannon_curated_v3_phate.pdf")
+save(fig1F, file="figures/fig1F_shannon.rda")
+
+
+ggsave("figures/fig1F_shannon_curated_v3_phate.pdf")
 
 
 ```
@@ -1150,7 +1155,7 @@ genus_phate$embedding %>%
   #filter(!is.na(age)) %>%
   mutate(Enterotypes_id = paste("m",Enterotypes_id) %>% forcats::fct_reorder(shannon)) %>%
   filter(age_category2=="00s" & !is.na(age)) %>%
-  ggplot() + geom_bar(aes(x=Enterotypes_id, y = (..count..)/sum(..count..) )) + 
+  ggplot() + geom_bar(aes(x=Enterotypes_id, y = (after_stat(count))/sum(after_stat(count)) )) + 
   #scale_fill_viridis_d("Age", option="plasma") +
   cowplot::theme_cowplot() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
@@ -1165,6 +1170,50 @@ figS7A + figS7B + plot_annotation(tag_levels = "A")
 ggsave("figures/figS7.pdf")
 
 ```
+
+#### focus on infants 0-3 year old
+
+
+
+```{r}
+
+
+genus_phate$embedding %>%
+  merge(enterotypes, by.x="row.names", by.y="sample_name") %>%
+  merge(shannon_curated_v3, by.x="Row.names", by.y="row.names" ) %>%
+  merge(metadata %>% select(sample_id,age_category2, age, infant_age), by.x="Row.names", by.y="sample_id") %>%
+  filter(!is.na(age)|!is.na(infant_age)) %>%
+  mutate(infant_age = ifelse(is.na(infant_age), age*325, infant_age)) %>%
+  filter(infant_age < 4*365) %>% 
+  mutate(infant_age_category =
+           case_when(
+             infant_age <= 30*1 ~ "01m",
+               infant_age <= 30*2 & age > 30*1 ~ "02m",
+              infant_age <= 30*3 & age > 30*2 ~ "02m",
+             infant_age <= 30*6 & age > 30*3 ~ "03m",
+             infant_age <= 30*9 & age > 30*6 ~ "06m",
+             infant_age <= 30*12 & age > 30*9 ~ "09m",
+             infant_age <= 30*15 & age > 30*12 ~ "12m",
+             infant_age <= 30*18 & age > 30*15 ~ "15m",
+             infant_age <= 30*21 & age > 30*18 ~ "18m",
+             infant_age <= 30*24 & age > 30*21 ~ "21m",
+             infant_age <= 30*30 & age > 30*24 ~ "24m",
+             infant_age <= 30*36 & age > 30*30 ~ "30m",
+             infant_age > 30*36 ~ "36m+",
+             TRUE ~ as.character("other"),
+
+           )) %>%
+  mutate(infant_age_cat2 = cut(infant_age, breaks = c(-1,5, 10, 30, 60, 90, 30*6, 30*12, 30*18, Inf))) %>%
+  
+  ggplot() + geom_point(aes(x=PHATE1, y=PHATE2, col=infant_age+1), size=1, alpha=0.5) +
+  scale_color_viridis_c("Age", option="plasma") + cowplot::theme_cowplot() + facet_wrap(~infant_age_cat2) #-> figS_infant
+
+
+```
+
+
+
+
 
 ### figure 1 with infants
 ```{r fig.height=15, fig.width=15}
@@ -1187,18 +1236,24 @@ ggsave("figures/Figure1_ter.pdf")
 ## final figure 1
 ```{r fig.height=15, fig.width=15}
 
+scale_fig1C = scale_color_viridis_c("*Prevotella*/<br>*Bacteroides*<br>ratio (log2)", option="cividis") 
+scale_fig1D = scale_color_viridis_c("*Bifidobacterium*/<br>*Bacteroides*<br>ratio (log2)", option="cividis")
+theme_md = theme(legend.title = ggtext::element_markdown())
+
 (((fig1A+ylab("alpha-\ndiversity")+xlab("DMM partitions"))/
-  (fig1B+xlab("DMM partitions"))/
+  (fig1B+xlab("DMM partitions")+theme(axis.text.y = element_text(size=12, face="italic")))/
   (fig1C2+xlab("DMM partitions")) + plot_layout(heights = c(1,2,1))
  |
   
   (
     
-    (fig1F/fig1C/fig1D/fig1E/((fig1H+scale_colour_brewer("main taxa\nper partitions", type="qual"))+cowplot::theme_cowplot())))
+    (fig1F/(fig1C+scale_fig1C+theme_md)/
+       (fig1D+scale_fig1D+theme_md)/
+       fig1E/((fig1H+scale_colour_brewer("main taxa\nper partitions", type="qual"))+cowplot::theme_cowplot()+ theme(legend.text=element_text(size=12, face="italic")))))
     
   )) + plot_annotation(tag_levels = 'a')
 
-ggsave("figures/Figure1_v4.pdf")
+ggsave("figures/Figure1_v4.pdf", height = 15, width = 15)
 
 
 ```
