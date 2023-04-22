@@ -23,7 +23,7 @@ load("agp_metadata_enterotypes_num.rda")
 
 enterotypes = readr::read_csv2("enterotypes_prediction_outliers.csv")[,-1]
 
-metadata=read.csv2(system.file("data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv", package = "gutzilla"), stringsAsFactors = FALSE) %>% mutate_all(na_if,"")
+metadata=read.csv2(system.file("data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv", package = "gutzilla"), stringsAsFactors = FALSE) %>% mutate(across(where(is.character), ~na_if(., "")))
 
 shannon_path = system.file("data-raw/qiime/generated-files-20190512/alpha/shannon.qza", package = "gutzilla")
 
@@ -1643,11 +1643,11 @@ ggplot() + geom_bar(aes(x=variable,y=estimate,fill=switch), position = "dodge", 
   
 
 
-df %>%
-  mutate(delta_ratio = abs(log2(ratio_before) - log2(ratio))) %>%
-  select(SAMPLE_NAME,Enterotypes_id, shannon, switch) %>%
-  merge(metadata_enterotypes_num %>% select(-Enterotypes_id) %>% mutate_all(as.numeric), by.x="SAMPLE_NAME", by.y="row.names") %>%
-  reshape2::melt(id=c("SAMPLE_NAME","Enterotypes_id","switch","shannon","shannon_before","ratio","ratio_before")) 
+# df %>%
+#   mutate(delta_ratio = abs(log2(ratio_before) - log2(ratio))) %>%
+#   select(SAMPLE_NAME,Enterotypes_id, shannon, switch) %>%
+#   merge(metadata_enterotypes_num %>% select(-Enterotypes_id) %>% mutate_all(as.numeric), by.x="SAMPLE_NAME", by.y="row.names") %>%
+#   reshape2::melt(id=c("SAMPLE_NAME","Enterotypes_id","switch","shannon","shannon_before","ratio","ratio_before")) 
 
 
 
@@ -2606,10 +2606,10 @@ f_b_ratio %>%
   #geom_vline(xintercept = 1/5) + 
   cowplot::theme_cowplot() +
   ylab("Bacteroides DMM partitions") +
-  xlab("Faecalibacterium Bacteroides ratio") -> p_fprau_partition
+  xlab("Faecalibacterium Bacteroides ratio") -> p_fprau_partition_bw
 
 
-p_fprau_density/p_fprau_partition
+p_fprau_density/p_fprau_partition_bw
 
 
 ```
@@ -3355,6 +3355,13 @@ fig5K_ellispse+
 
 ggsave(file="figure_network_time_series.pdf")
 
+x_lab_fig5BC = xlab("*Faecalibacterium*/<br>*Bacteroides*<br>ratio") 
+
+x_lab_fprau = xlab("*Faecalibacterium* *Bacteroides* ratio<br>within *Bacteroides* enriched branch") 
+
+y_lab_fprau = ylab("*Bacteroides*<br>DMM types")
+
+theme_md = theme(axis.title.x = ggtext::element_markdown(), axis.title.y = ggtext::element_markdown())
 
 
 (
@@ -3372,11 +3379,11 @@ ggsave(file="figure_network_time_series.pdf")
         (
           (fig5Binset+ylab("F B ratio variation"))/
             (fig5Cinset+ylab("F B ratio variation")) |
-            (fig5B_full_scaled)/
-            (fig5C_full_scaled))/
+            (fig5B_full_scaled + x_lab_fig5BC + theme_md)/
+            (fig5C_full_scaled + x_lab_fig5BC + theme_md))/
           (
-            (p_fprau_density+geom_vline(xintercept = 1/4))/
-              (p_fprau_partition+  geom_vline(xintercept = 1/4)) + 
+            (p_fprau_density+geom_vline(xintercept = 1/4) + x_lab_fprau + theme_md)/
+              (p_fprau_partition+  geom_vline(xintercept = 1/4) + x_lab_fprau + y_lab_fprau + theme_md) + 
               plot_layout(heights = c(1,2)) 
             ) 
         ) + 
@@ -3386,10 +3393,11 @@ ggsave(file="figure_network_time_series.pdf")
   plot_layout(widths = c(1.5,1.5)) + plot_annotation(tag_levels = "a")
 
 
-ggsave(file="figure_network_time_series.pdf")
+ggsave(file="figures/figure3_network_time_series.pdf")
 
-
-
+save(fig5Binset, file="figures/fig3c.rda")
+save(fig5Cinset, file="figures/fig3d.rda")
+save(p_fprau_partition, file="figures/fig3h.rda")
 ```
 
 
