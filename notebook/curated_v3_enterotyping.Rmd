@@ -450,8 +450,22 @@ ann_colors = list(
 
 
   #as.matrix %>% #log10() %>%
-  pheatmap::pheatmap(mat=log10(microbiota_types), cutree_cols = 7, annotation_col = microbiota_annotation, cellwidth = 10, cellheight = 20, clustering_distance_cols = microbiota_types_jsd, annotation_colors = ann_colors, color=viridis::viridis_pal()(100)) %>% ggplotify::as.ggplot() -> fig3A
-fig3A
+  pheatmap::pheatmap(mat=log10(microbiota_types), 
+                     cutree_cols = 7, 
+                     annotation_col = microbiota_annotation, 
+                     cellwidth = 10, cellheight = 20, 
+                     clustering_distance_cols = microbiota_types_jsd, 
+                     annotation_colors = ann_colors, 
+                     color=viridis::viridis_pal()(100),
+                     labels_row = as.expression(lapply(rownames(microbiota_types),
+                                         function(x) bquote(italic(.(x)))))
+                                         ) %>% ggplotify::as.ggplot() -> fig3A
+
+save(fig3A, file="figures/fig3A.rda")
+    
+fig3A 
+
+
 ggsave("dmm_types_clustering_curated_agp.pdf")
 
 ```
