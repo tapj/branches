@@ -393,7 +393,34 @@ enterotypes_prediction %>%
 ```
 
 
+## select top genera and DMM alpha coef from AGP
+```{r}
+load("../fit_genus_bootstrap.rda")
 
+###################################################
+### code chunk number 11: posterior-mean-diff
+###################################################
+p0 <- fitted(fit_genus_bootstrap[[1]][[1]][[1]], scale=TRUE)     # scale by theta
+pbest <- fitted(fit_genus_bootstrap[[1]][[1]][[14]], scale=TRUE)
+colnames(pbest) <- paste("m", 1:19, sep="")
+(meandiff <- colSums(abs(pbest - as.vector(p0))))
+sum(meandiff)
+
+
+###################################################
+### code chunk number 12: table-1
+###################################################
+diff <- rowSums(abs(pbest - as.vector(p0)))
+o <- order(diff, decreasing=TRUE)
+cdiff <- cumsum(diff[o]) / sum(diff)
+df <- head(cbind(Mean=p0[o], pbest[o,], diff=diff[o], cdiff), 30)
+df %>% as.data.frame()
+
+df_gutzilla = df %>% as.data.frame()
+
+save(df_gutzilla, file="../df_gutzilla.rda")
+
+```
 
 
 
@@ -412,7 +439,7 @@ merge(df_curated_v3 %>% select(-m19,-m22,-m23,-m24),df_gutzilla, by="row.names")
   select(-Mean.x,-Mean.y, -Row.names) %>% 
   colnames() %>%
   tibble::tibble(Microbiota=.) %>%
-  mutate(dataset=ifelse(Microbiota %>% grepl("\\M", .), "AGP","CuratedMGdb")) %>%
+  mutate(dataset=ifelse(Microbiota %>% grepl("\\M", .), "AGP","CMD")) %>%
   #mutate(random=rnorm(18+19)) %>%
   #merge(microbiota_types_alpha_diversity, by.x="Microbiota", by.y="Enterotypes_id") %>%
   #select(-rank, -Shannon) %>%
@@ -442,7 +469,7 @@ colnames(microbiota_types_jsd) = row.names(microbiota_types_jsd) = colnames(micr
 microbiota_types_jsd = microbiota_types_jsd %>% as.dist() %>% sqrt()
 
 ann_colors = list(
-    dataset = c(AGP="pink", CuratedMGdb="lightblue"),
+    dataset = c(AGP="pink", CMD="lightblue"),
     `Shannon scaled` = RColorBrewer::brewer.pal(4, name="OrRd"),
     Axis1 = RColorBrewer::brewer.pal(4, name="BrBG"),
     Axis2 = RColorBrewer::brewer.pal(4, name="BrBG")
