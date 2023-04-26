@@ -1018,16 +1018,16 @@ enterotypes_time_series_network_random %>%
 
 
 enterotypes_time_series_network_random %>%
-  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "Prevotella\nDMM types",
-                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides\nDMM types",
-                              Enterotypes_id %in% c(12,1,5,9) ~ "Clostridiales\nDMM types",
+  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "*Prevotella*<br>DMM partitions",
+                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "*Bacteroides*<br>DMM partitions",
+                              Enterotypes_id %in% c(12,1,5,9) ~ "*Clostridiales*<br>DMM partitions",
                               Enterotypes_id %in% c(13) ~ "Akk.",
                               TRUE ~ "outliers")
          ) %>%
-  mutate(branches_before = case_when(Enterotypes_id_before %in% c(18,14,16,17,7) ~ "Prevotella\nDMM types",
-                              Enterotypes_id_before %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides\nDMM types",
-                              Enterotypes_id_before %in% c(12,1,5,9) ~ "Clostridiales\nDMM types",
-                              Enterotypes_id_before %in% c(13) ~ "Akk.",
+  mutate(branches_before = case_when(Enterotypes_id_before %in% c(18,14,16,17,7) ~ "*Prevotella*<br>DMM partitions",
+                              Enterotypes_id_before %in% c(11,15,6,8,10,3,4,2) ~ "*Bacteroides*<br>DMM partitions",
+                              Enterotypes_id_before %in% c(12,1,5,9) ~ "*Clostridiales*<br>DMM partitions",
+                              Enterotypes_id_before %in% c(13) ~ "*Akk.*",
                               TRUE ~ "outliers")
          ) %>%
  mutate(group = ifelse(Enterotypes_id_before == Enterotypes_id, "within Partition", ifelse(branches_before==branches, "within Branch\nbetween Partitions", "between Branches") )) %>%
@@ -1044,16 +1044,16 @@ enterotypes_time_series_network_random %>%
   
   rbind( 
           enterotypes_time_series_network %>%
-  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "Prevotella\nDMM types",
-                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides\nDMM types",
-                              Enterotypes_id %in% c(12,1,5,9) ~ "Clostridiales\nDMM types",
-                              Enterotypes_id %in% c(13) ~ "Akk.",
+  mutate(branches = case_when(Enterotypes_id %in% c(18,14,16,17,7) ~ "*Prevotella*<br>DMM partitions",
+                              Enterotypes_id %in% c(11,15,6,8,10,3,4,2) ~ "*Bacteroides*<br>DMM partitions",
+                              Enterotypes_id %in% c(12,1,5,9) ~ "*Clostridiales*<br>DMM partitions",
+                              Enterotypes_id %in% c(13) ~ "*Akk.*",
                               TRUE ~ "outliers")
          ) %>%
-  mutate(branches_before = case_when(Enterotypes_id_before %in% c(18,14,16,17,7) ~ "Prevotella\nDMM types",
-                              Enterotypes_id_before %in% c(11,15,6,8,10,3,4,2) ~ "Bacteroides\nDMM types",
-                              Enterotypes_id_before %in% c(12,1,5,9) ~ "Clostridiales\nDMM types",
-                              Enterotypes_id_before %in% c(13) ~ "Akk.",
+  mutate(branches_before = case_when(Enterotypes_id_before %in% c(18,14,16,17,7) ~ "*Prevotella*<br>DMM partitions",
+                              Enterotypes_id_before %in% c(11,15,6,8,10,3,4,2) ~ "*Bacteroides*<br>DMM partitions",
+                              Enterotypes_id_before %in% c(12,1,5,9) ~ "*Clostridiales*<br>DMM partitions",
+                              Enterotypes_id_before %in% c(13) ~ "*Akk.*",
                               TRUE ~ "outliers")
          ) %>%
   mutate(group = ifelse(Enterotypes_id_before == Enterotypes_id, "within Partition", ifelse(branches_before==branches, "within Branch\nbetween Partitions", "between Branches") )) %>%
@@ -1070,7 +1070,7 @@ ggplot() + geom_bar(aes(x=paste0("M",Enterotypes_id_before),y=p,fill=dataset),st
   xlab("Gut microbiome partitions") +
   ylab("Proportions") +
   theme(axis.text.x=element_text(angle=90,hjust=1, vjust=0.5)) + 
-  theme(legend.position="bottom") -> fig5M_stability
+  theme(legend.position="bottom", strip.text = ggtext::element_markdown()) -> fig5M_stability
   
   
 fig5M_stability
@@ -3355,11 +3355,13 @@ fig5K_ellispse+
 
 ggsave(file="figure_network_time_series.pdf")
 
-x_lab_fig5BC = xlab("*Faecalibacterium*/<br>*Bacteroides*<br>ratio") 
+y_lab_fig5BCinset = ylab("*Faecalibacterium*/<br>*Bacteroides*<br>ratio variation")
 
-x_lab_fprau = xlab("*Faecalibacterium* *Bacteroides* ratio<br>within *Bacteroides* enriched branch") 
+x_lab_fig5BC = xlab("*Faecalibacterium* /<br>*Bacteroides*<br>ratio") 
 
-y_lab_fprau = ylab("*Bacteroides*<br>DMM types")
+x_lab_fprau = xlab("*Faecalibacterium* / *Bacteroides* ratio<br>within *Bacteroides* enriched branch") 
+
+y_lab_fprau = ylab("*Bacteroides*<br>DMM partitions")
 
 theme_md = theme(axis.title.x = ggtext::element_markdown(), axis.title.y = ggtext::element_markdown())
 
@@ -3377,8 +3379,8 @@ theme_md = theme(axis.title.x = ggtext::element_markdown(), axis.title.y = ggtex
     (
       (
         (
-          (fig5Binset+ylab("F B ratio variation"))/
-            (fig5Cinset+ylab("F B ratio variation")) |
+          (fig5Binset+ylab("*Faecalibacterium* /<br>*Bacteroides*<br>ratio variation")+theme_md)/
+            (fig5Cinset+ylab("*Faecalibacterium* /<br>*Bacteroides*<br>ratio variation")+theme_md) |
             (fig5B_full_scaled + x_lab_fig5BC + theme_md)/
             (fig5C_full_scaled + x_lab_fig5BC + theme_md))/
           (
