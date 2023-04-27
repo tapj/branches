@@ -1173,15 +1173,15 @@ ggraph(graph, weights=p, layout="stress") +
   #scale_alpha_ordinal("participants proportion") +
   #geom_node_point(aes(color=branches,size=stability*2)) +
   #geom_node_point(aes(color=branches,size=stability)) +
-  geom_node_label(aes(label=partition_names, fill=branches %>% gsub("DMM types","",.), size=stability), shape=15) + 
+  geom_node_label(aes(label=partition_names, fill=branches %>% gsub("DMM types","",.) , size=stability), shape=15) + 
   #geom_node_text(aes(label=partition_names), repel=TRUE) +
   scale_color_brewer(type="qual") +
-  scale_fill_brewer("DMM types", type="qual") +
+  scale_fill_brewer("DMM partitions", type="qual") +
   scale_alpha_continuous("participants proportion") + 
   scale_edge_alpha("ind. proportion (switch)") + 
   scale_edge_color_continuous("ind. proportion (switch)", low = "grey", high ="red", guide = FALSE) +
   scale_size_continuous("ind. proportion (stable)", trans="log10", limits = c(0.1,0.9), breaks = c(0.3,0.6,0.9)) +
-  theme_void() -> fig5A
+  theme_void() + theme(legend.text = element_text(face="italic")) -> fig5A
   
 fig5A
 
@@ -3395,7 +3395,7 @@ theme_md = theme(axis.title.x = ggtext::element_markdown(), axis.title.y = ggtex
   plot_layout(widths = c(1.5,1.5)) + plot_annotation(tag_levels = "a")
 
 
-ggsave(file="figures/figure3_network_time_series.pdf")
+ggsave(file="figures/figure3_network_time_series.pdf", height=12, width=16)
 
 save(fig5Binset, file="figures/fig3c.rda")
 save(fig5Cinset, file="figures/fig3d.rda")
@@ -3547,7 +3547,7 @@ intermediate.stability %>% sort %>% round(3)
 
 ## bimodality quantifycation
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 # Bimodality is better estimated from abundances at log scale (such as CLR)
 pseq0.clr <- microbiome::transform(pseq0, "clr")
 
@@ -3566,7 +3566,7 @@ bimodality.score %>% sort %>% round(3)
 
 ## Comparing bimodality and intermediate stability
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 taxa <- taxa(pseq0)
 df <- data.frame(group = as.character(taxa) %>% gsub("g__","",.),
@@ -3601,7 +3601,7 @@ print(p)
 
 ## Tipping point
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 # Log10 abundance for a selected taxonomic group
 # Pick the most bimodal taxa as an example
@@ -3632,7 +3632,7 @@ print(tipping.point)
 ```
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
  f <- abundances(microbiome::transform(pseq, "identity"))[tax,]
  b <- abundances(microbiome::transform(pseq, "identity"))["g__Bacteroides",]
  x=log2((f+1)/(b+1))
@@ -3648,7 +3648,7 @@ abline(v = x[tipping.samples])
 
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 data.frame(x) %>%
   merge(sample_data(pseq), by="row.names") %>%
@@ -3669,7 +3669,7 @@ data.frame(x) %>%
 ## by branch
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 branches = c("Bacteroides DMM types","Prevotella DMM types", "Clostridiales DMM types", "Akkermansia DMM types")
 res=NULL
 for(branch in branches) {
@@ -3696,7 +3696,7 @@ for(branch in branches) {
 ```
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 merge(res,
 data.frame(bimodality_score_all=bimodality.score,intermediate_stability_all=intermediate.stability),
 by.y="row.names", by.x="taxa") %>%
@@ -3734,7 +3734,7 @@ data.frame(bimodality_score_all=bimodality.score,intermediate_stability_all=inte
 
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 
 pseq=phyloseq(OTU=genus_for_phyloseq, sample_data(metadata_for_physeq), TAX=taxa_for_phyloseq )
@@ -3784,7 +3784,7 @@ metadata_time_lag %>%
 
 
 
-```{r fig.height=7, fig.width=7}
+```{r eval=FALSE, fig.height=7, fig.width=7, include=FALSE}
 metadata_taxa_time_lag %>%
   filter(taxa %in% c("g__Lactobacillus","g__Desulfovibrio")) %>%
   mutate(value_abs=ifelse(value.x<value.y, value.x, value.y)) %>%
@@ -3845,7 +3845,7 @@ metadata_taxa_time_lag %>%
 ```
 
 
-```{r fig.height=7, fig.width=7}
+```{r eval=FALSE, fig.height=7, fig.width=7, include=FALSE}
 res=NULL
 
 for(i in 1:17){
@@ -3881,7 +3881,7 @@ res %>% select(taxa,switch)
 ```
 
 
-```{r fig.height=7, fig.width=7}
+```{r eval=FALSE, fig.height=7, fig.width=7, include=FALSE}
 res2=NULL
 
 for(i in 1:17){
@@ -3919,7 +3919,7 @@ res2
 
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 
 merge(res %>% select(taxa, switch),
 res2 %>% select(taxa, switch), by=c("taxa","switch"))
@@ -3930,7 +3930,7 @@ res2 %>% select(taxa, switch), by=c("taxa","switch"))
 
 
 
-```{r fig.height=7, fig.width=7}
+```{r eval=FALSE, fig.height=7, fig.width=7, include=FALSE}
 metadata_taxa_time_lag %>%
   #filter(taxa %in% c("g__Prevotella","g__Odoribacter")) %>%
   filter(Enterotypes_id %in% c("3","5"), Enterotypes_id_before %in% c("3","5")) %>%
