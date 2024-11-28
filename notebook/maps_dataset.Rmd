@@ -1,0 +1,141 @@
+---
+title: "dataset map"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(raster)      # classes and functions for raster data
+devtools::load_all(reset=FALSE)
+library(spData)        # load geographic data
+#library(spDataLarge)   # load larger geographic data
+
+
+library(dplyr)
+library(ggplot2)
+
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+## AGP
+
+metadata = readr::read_csv2(system.file("data-raw/Metadata_10317_20191022-112414_curatedv4_VSv1.csv", package = "gutzilla"))
+
+colnames(metadata) = stringr::str_to_lower(colnames(metadata))
+
+grep("United",world$name_long, value = TRUE)
+grep("United",metadata$country_of_birth, value = TRUE) %>% unique
+grep("USA",metadata$country_of_birth, value = TRUE) %>% unique
+grep("China",metadata$country_of_birth, value = TRUE) %>% unique
+grep("China",world$name_long, value = TRUE)
+
+enterotypes = readr::read_csv2("enterotypes_prediction_outliers.csv")[,-1]
+
+
+metadata %>%
+  filter(sample_name %in% enterotypes$sample_name) %>%
+  dplyr::select(country_of_birth) %>%
+  mutate(country_of_birth = gsub("USA","United States",country_of_birth)) %>%
+  merge(world, by.x="country_of_birth", by.y="name_long") %>%
+  dplyr::select(subregion) %>% group_by(subregion) %>% summarise(n=n()) -> agp_subregion
+
+agp_subregion
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+## CMD
+
+load(system.file("data-raw/curatedMetaG/curated_v3_otu_tax.rda", package = "gutzilla"))
+
+
+metadata = sampleMetadata
+
+enterotypes = read.csv2("enterotypes_curated_v3_prediction.csv", row.names=1)
+
+metadata %>%
+  filter(sample_id %in% enterotypes$sample_name) %>%
+  dplyr::select(country) %>%
+  merge(UNSD_countries %>% dplyr::select(`ISO-alpha3 Code`, `Sub-region Name`), by.x="country", by.y="ISO-alpha3 Code") %>%
+  dplyr::select(subregion = `Sub-region Name`) %>% group_by(subregion) %>% summarise(n=n()) -> cmd_subregion
+```
+
+
+```{r}
+
+
+
+world %>%
+  filter(subregion != "Antarctica") %>%
+  group_by(subregion) %>%
+  summarise(n1=n()) %>% as.data.frame()
+
+
+world %>%
+  filter(subregion != "Antarctica") %>%
+  group_by(subregion) %>%
+  summarise(n1=n()) %>%
+  merge(
+    rbind(agp_subregion,cmd_subregion), 
+    by.x="subregion", by.y="subregion", all.x=TRUE) %>%
+  #dplyr::rename(`Nb of\nind.` = n) %>%
+  ggplot() + geom_sf(aes(fill=n)) + scale_fill_continuous("Nb of\nind.",trans="log10") +
+  theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(),
+  panel.background = element_rect(fill = "white"),
+  plot.title = element_text(hjust = 0.5))
+
+
+world %>%
+  filter(subregion != "Antarctica") %>%
+  group_by(subregion) %>%
+  summarise(n1=n()) %>%
+  merge(
+    rbind(agp_subregion), 
+    by.x="subregion", by.y="subregion", all.x=TRUE) %>%
+  #dplyr::rename(`Nb of\nind.` = n) %>%
+  ggplot() + geom_sf(aes(fill=n)) + scale_fill_continuous("Nb of\nind.",trans="log10") +
+  theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(),
+  panel.background = element_rect(fill = "white"),
+  plot.title = element_text(hjust = 0.5))
+
+
+world %>%
+  filter(subregion != "Antarctica") %>%
+  group_by(subregion) %>%
+  summarise(n1=n()) %>%
+  merge(
+    rbind(cmd_subregion), 
+    by.x="subregion", by.y="subregion", all.x=TRUE) %>%
+  #dplyr::rename(`Nb of\nind.` = n) %>%
+  ggplot() + geom_sf(aes(fill=n)) + scale_fill_continuous("Nb of\nind.",trans="log10") +
+  theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(),
+  panel.background = element_rect(fill = "white"),
+  plot.title = element_text(hjust = 0.5))
+
+```
+
+
+
